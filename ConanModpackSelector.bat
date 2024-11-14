@@ -6,7 +6,8 @@ py -3 --version
 
 echo.
 echo This script will check for Python, install it if its not found, and then run the ConanModpackManager script.
-echo **NOTE**: This is a single-use run. If you wish to automate it, refer to the GitHub README for details on integration.
+echo **NOTE**: This is a run everytime you want to do it. If you wish to automate it for when you open the conan 
+echo launcher, please feel free to help contribute to the project.
 echo.
 echo.
 
