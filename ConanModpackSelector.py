@@ -29,33 +29,30 @@ def download_steamcmd():
         os.system(f"curl -o {zip_path} {url}")
         shutil.unpack_archive(zip_path, steamcmd_dir)
         os.remove(zip_path)
-        print("SteamCMD downloaded.")
+        print("SteamCMD downloaded successfully.")
 
 def download_mod(mod_id):
     print(f"Downloading mod with ID: {mod_id}")
     subprocess.run([steamcmd_executable, "+login", "anonymous", "+workshop_download_item", "440900", mod_id, "+quit"])
 
 print("Conan Modpack Selector by DJRLincs\n***Warning***\n")
-print("Please note that this script will overwrite your modlist.txt file in the main ConanSandbox/Mods folder.")
-print("It does not download the workshop items for you.\n")
-print("**If this is the first time you are running this script, you will need to run it again after it creates the modpack")
-print("folder in your Mods directory and places the modlist files in the modpack folder named**\n")
+print("This script will overwrite the 'modlist.txt' file in the main ConanSandbox/Mods folder.")
+print("The script will not automatically download the workshop items unless you choose to use SteamCMD.\n")
+print("If this is your first time running this script, you'll need to rerun it after creating")
+print("a modpack folder in your Mods directory and placing modlist files in it.\n")
 input("Press Enter to continue...")
 
-# Load the Conan Exiles directory from config if it exists; otherwise, prompt the user for it
+# Load the Conan Exiles directory from the config if it exists; otherwise, prompt the user for it
 conan_dir = load_config()
 if not conan_dir:
-    conan_dir = input("Enter the full Conan Exiles installation directory (e.g., E:\\Program Files (x86)\\Steam\\steamapps\\common\\Conan Exiles): \n")
+    conan_dir = input("Enter the full path to your Conan Exiles installation (e.g., E:\\Program Files (x86)\\Steam\\steamapps\\common\\Conan Exiles): \n")
     save_config(conan_dir)
 
-# Determine the base Steam directory by stripping out everything after "steamapps"
+# Determine the base Steam directory by removing everything after "steamapps"
 steam_dir = conan_dir.split("common")[0].strip("\\")
-workshop_content_dir = os.path.join(steam_dir, "workshop", "content", "440900")
+workshop_content_dir = os.path.join(steam_dir, "workshop", "content", "440900").replace("\\", "/")
 
-# Normalize the workshop path to use forward slashes
-workshop_content_dir = workshop_content_dir.replace("\\", "/")
-
-# Navigate to the Mods folder
+# Define paths for Mods and modpacks folders
 mods_dir = os.path.join(conan_dir, "ConanSandbox", "Mods")
 modpacks_dir = os.path.join(mods_dir, "modpacks")
 
@@ -70,7 +67,7 @@ for i, modpack in enumerate(modpacks):
     print(f"{i+1}. {modpack[:-4]}")
 
 # Prompt the user to select a modpack
-selected_index = int(input("Enter the number of the modpack you want to use: "))
+selected_index = int(input("Enter the number of the modpack you want to apply: "))
 selected_modpack = modpacks[selected_index - 1]
 
 # Copy the selected modpack's modlist.txt file to the main Mods folder
@@ -93,8 +90,8 @@ with open(target_path, "w") as f:
 # Extract mod IDs from modlist.txt, only capturing the digits after "440900/" or "440900\"
 mod_ids = re.findall(r"440900[\\/](\d+)", content)
 
-# Prompt user to decide whether to download mods or not
-download_choice = input("Do you want to download the mods via SteamCMD? (yes/no): ").strip().lower()
+# Prompt the user to decide whether to download mods using SteamCMD
+download_choice = input("Do you need to download the mods listed in the modlist.txt file via SteamCMD? (yes/no): ").strip().lower()
 
 # Download SteamCMD and mods only if the user chose to download
 if download_choice == "yes":
@@ -104,7 +101,7 @@ if download_choice == "yes":
         if not os.path.exists(mod_path):
             download_mod(mod_id)
         else:
-            print(f"Mod {mod_id} already downloaded; skipping download.")
-    print("All listed mods have been downloaded and configured.")
+            print(f"Mod {mod_id} already exists; skipping download.")
+    print("All mods listed in modlist.txt have been downloaded and configured.")
 else:
-    print("Mod download skipped. Mods listed in the modlist.txt file have been configured.")
+    print("Mod download skipped. Mods listed in the modlist.txt file have been configured without downloading.")
