@@ -19,6 +19,14 @@ def load_config():
             return config.get("conan_dir")
     return None
 
+def validate_conan_path(conan_dir):
+    # Ensure the path contains ConanSandbox to verify it is correct
+    if os.path.exists(os.path.join(conan_dir, "ConanSandbox")):
+        return True
+    else:
+        print("The specified path does not contain 'ConanSandbox'. Please check the path and try again.")
+        return False
+
 def download_steamcmd():
     if not os.path.exists(steamcmd_dir):
         os.makedirs(steamcmd_dir)
@@ -35,7 +43,7 @@ def download_mod(mod_id):
     print(f"Downloading mod with ID: {mod_id}")
     subprocess.run([steamcmd_executable, "+login", "anonymous", "+workshop_download_item", "440900", mod_id, "+quit"])
 
-print("Conan Modpack Selector by DJRLincs\n***Warning***\n")
+print("\nConan Modpack Selector by DJRLincs\n***Warning***\n")
 print("This script will overwrite the 'modlist.txt' file in the main ConanSandbox/Mods folder.")
 print("The script will not automatically download the workshop items unless you choose to use SteamCMD.\n")
 print("If this is your first time running this script, you'll need to rerun it after creating")
@@ -44,9 +52,12 @@ input("Press Enter to continue...")
 
 # Load the Conan Exiles directory from the config if it exists; otherwise, prompt the user for it
 conan_dir = load_config()
-if not conan_dir:
-    conan_dir = input("Enter the full path to your Conan Exiles installation (e.g., E:\\Program Files (x86)\\Steam\\steamapps\\common\\Conan Exiles): \n")
-    save_config(conan_dir)
+if not conan_dir or not validate_conan_path(conan_dir):
+    while True:
+        conan_dir = input("Enter the full path to your Conan Exiles installation (e.g., E:\\Program Files (x86)\\Steam\\steamapps\\common\\Conan Exiles): \n")
+        if validate_conan_path(conan_dir):
+            save_config(conan_dir)
+            break
 
 # Determine the base Steam directory by removing everything after "steamapps"
 steam_dir = conan_dir.split("common")[0].strip("\\")
@@ -60,6 +71,13 @@ modpacks_dir = os.path.join(mods_dir, "modpacks")
 if not os.path.exists(modpacks_dir):
     os.makedirs(modpacks_dir)
 
+# Check for modlist.txt; create if not present
+target_path = os.path.join(mods_dir, "modlist.txt")
+if not os.path.isfile(target_path):
+    print("No modlist.txt file found in the Mods folder. Creating a new empty modlist.txt file.")
+    with open(target_path, "w") as f:
+        f.write("")
+
 # List available modpacks
 modpacks = [f for f in os.listdir(modpacks_dir) if f.endswith(".txt")]
 print("Available modpacks:")
@@ -70,38 +88,47 @@ for i, modpack in enumerate(modpacks):
 selected_index = int(input("Enter the number of the modpack you want to apply: "))
 selected_modpack = modpacks[selected_index - 1]
 
-# Copy the selected modpack's modlist.txt file to the main Mods folder
-src_path = os.path.join(modpacks_dir, selected_modpack)
-target_path = os.path.join(mods_dir, "modlist.txt")
-shutil.copy(src_path, target_path)
+# Ask for confirmation before overwriting modlist.txt
+confirmation = input("Are you sure you want to overwrite the current modlist.txt file? (yes/no): ").strip().lower()
+if confirmation == "yes":
+    # Backup existing modlist.txt file
+    backup_path = os.path.join(mods_dir, "modlist_backup.txt")
+    shutil.copy(target_path, backup_path)
+    print(f"Backup of the existing modlist.txt created at {backup_path}.")
 
-# Read and update the modlist.txt file in the main Mods folder
-with open(target_path, "r") as f:
-    content = f.read()
+    # Copy the selected modpack's modlist.txt file to the main Mods folder
+    src_path = os.path.join(modpacks_dir, selected_modpack)
+    shutil.copy(src_path, target_path)
 
-# Replace any path prefix before "440900" with the selected workshop content directory
-pattern = r".*?[/\\]440900"
-content = re.sub(pattern, workshop_content_dir, content)
+    # Read and update the modlist.txt file in the main Mods folder
+    with open(target_path, "r") as f:
+        content = f.read()
 
-# Write the updated content back to the modlist.txt file
-with open(target_path, "w") as f:
-    f.write(content)
+    # Replace any path prefix before "440900" with the selected workshop content directory
+    pattern = r".*?[/\\]440900"
+    content = re.sub(pattern, workshop_content_dir, content)
 
-# Extract mod IDs from modlist.txt, only capturing the digits after "440900/" or "440900\"
-mod_ids = re.findall(r"440900[\\/](\d+)", content)
+    # Write the updated content back to the modlist.txt file
+    with open(target_path, "w") as f:
+        f.write(content)
 
-# Prompt the user to decide whether to download mods using SteamCMD
-download_choice = input("Do you need to download the mods listed in the modlist.txt file via SteamCMD? (yes/no): ").strip().lower()
+    # Extract mod IDs from modlist.txt, only capturing the digits after "440900/" or "440900\"
+    mod_ids = re.findall(r"440900[\\/](\d+)", content)
 
-# Download SteamCMD and mods only if the user chose to download
-if download_choice == "yes":
-    download_steamcmd()
-    for mod_id in mod_ids:
-        mod_path = os.path.join(workshop_content_dir, mod_id)
-        if not os.path.exists(mod_path):
-            download_mod(mod_id)
-        else:
-            print(f"Mod {mod_id} already exists; skipping download.")
-    print("All mods listed in modlist.txt have been downloaded and configured.")
+    # Prompt the user to decide whether to download mods using SteamCMD
+    download_choice = input("Do you need to download the mods listed in the modlist.txt file via SteamCMD? (yes/no): ").strip().lower()
+
+    # Download SteamCMD and mods only if the user chose to download
+    if download_choice == "yes":
+        download_steamcmd()
+        for mod_id in mod_ids:
+            mod_path = os.path.join(workshop_content_dir, mod_id)
+            if not os.path.exists(mod_path):
+                download_mod(mod_id)
+            else:
+                print(f"Mod {mod_id} already exists; skipping download.")
+        print("All mods listed in modlist.txt have been downloaded and configured.")
+    else:
+        print("Mod download skipped. Mods listed in the modlist.txt file have been configured without downloading.")
 else:
-    print("Mod download skipped. Mods listed in the modlist.txt file have been configured without downloading.")
+    print("Operation canceled. modlist.txt was not overwritten.")
