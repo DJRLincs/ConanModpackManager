@@ -16,18 +16,15 @@
 
 ## Installation
 
-1. **Clone the Repository**:
-   ```bash
-   git clone https://github.com/DJRLincs/ConanModpackManager.git
-   ```
-2. **Navigate to the Directory**:
-   ```bash
-   cd ConanModpackManager
-   ```
+1. **Download the zip**:
+   https://github.com/DJRLincs/ConanModpackManager/releases/tag/0.1
+   
+2. **Put it into a folder**:
+   find the folder you want to use it in and unzip
+   
 3. **Run the Script**:
-   ```bash
-   python conan_modpack_manager.py
-   ```
+   run the .bat file.
+   
 
 ## Usage
 
