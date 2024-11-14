@@ -80,21 +80,21 @@ if not os.path.isfile(target_path):
 
 # List available modpacks
 modpacks = [f for f in os.listdir(modpacks_dir) if f.endswith(".txt")]
-print("Available modpacks:")
+print("\nAvailable modpacks:")
 for i, modpack in enumerate(modpacks):
     print(f"{i+1}. {modpack[:-4]}")
 
 # Prompt the user to select a modpack
-selected_index = int(input("Enter the number of the modpack you want to apply: "))
+selected_index = int(input("\nEnter the number of the modpack you want to apply: "))
 selected_modpack = modpacks[selected_index - 1]
 
 # Ask for confirmation before overwriting modlist.txt
-confirmation = input("Are you sure you want to overwrite the current modlist.txt file? (yes/no): ").strip().lower()
+confirmation = input("\nAre you sure you want to overwrite the current modlist.txt file? (yes/no): ").strip().lower()
 if confirmation == "yes":
     # Backup existing modlist.txt file
     backup_path = os.path.join(mods_dir, "modlist_backup.txt")
     shutil.copy(target_path, backup_path)
-    print(f"Backup of the existing modlist.txt created at {backup_path}.")
+    print(f"\nBackup of the existing modlist.txt created at {backup_path}.")
 
     # Copy the selected modpack's modlist.txt file to the main Mods folder
     src_path = os.path.join(modpacks_dir, selected_modpack)
@@ -116,7 +116,7 @@ if confirmation == "yes":
     mod_ids = re.findall(r"440900[\\/](\d+)", content)
 
     # Prompt the user to decide whether to download mods using SteamCMD
-    download_choice = input("Do you need to download the mods listed in the modlist.txt file via SteamCMD? (yes/no): ").strip().lower()
+    download_choice = input("\nDo you need to download the mods listed in the modlist.txt file via SteamCMD? (yes/no): ").strip().lower()
 
     # Download SteamCMD and mods only if the user chose to download
     if download_choice == "yes":
@@ -127,8 +127,8 @@ if confirmation == "yes":
                 download_mod(mod_id)
             else:
                 print(f"Mod {mod_id} already exists; skipping download.")
-        print("All mods listed in modlist.txt have been downloaded and configured.")
+        print("\nAll mods listed in modlist.txt have been downloaded and configured.")
     else:
-        print("Mod download skipped. Mods listed in the modlist.txt file have been configured without downloading.")
+        print("\nMod download skipped. Mods listed in the modlist.txt file have been configured without downloading.")
 else:
-    print("Operation canceled. modlist.txt was not overwritten.")
+    print("\nOperation canceled. modlist.txt was not overwritten.")
