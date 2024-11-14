@@ -2,8 +2,11 @@ import os
 import shutil
 import re
 import json
+import subprocess
 
 config_path = "config.json"
+steamcmd_dir = "steamcmd"
+steamcmd_executable = os.path.join(steamcmd_dir, "steamcmd.exe")
 
 def save_config(conan_dir):
     with open(config_path, "w") as config_file:
@@ -15,6 +18,22 @@ def load_config():
             config = json.load(config_file)
             return config.get("conan_dir")
     return None
+
+def download_steamcmd():
+    if not os.path.exists(steamcmd_dir):
+        os.makedirs(steamcmd_dir)
+    if not os.path.isfile(steamcmd_executable):
+        print("Downloading SteamCMD...")
+        url = "https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip"
+        zip_path = os.path.join(steamcmd_dir, "steamcmd.zip")
+        os.system(f"curl -o {zip_path} {url}")
+        shutil.unpack_archive(zip_path, steamcmd_dir)
+        os.remove(zip_path)
+        print("SteamCMD downloaded.")
+
+def download_mod(mod_id):
+    print(f"Downloading mod with ID: {mod_id}")
+    subprocess.run([steamcmd_executable, "+login", "anonymous", "+workshop_download_item", "440900", mod_id, "+quit"])
 
 print("Conan Modpack Selector by DJRLincs\n***Warning***\n")
 print("Please note that this script will overwrite your modlist.txt file in the main ConanSandbox/Mods folder.")
@@ -71,4 +90,21 @@ content = re.sub(pattern, workshop_content_dir, content)
 with open(target_path, "w") as f:
     f.write(content)
 
-print("modlist.txt has been updated for Conan with the correct workshop content directory also put in place.")
+# Extract mod IDs from modlist.txt, only capturing the digits after "440900/" or "440900\"
+mod_ids = re.findall(r"440900[\\/](\d+)", content)
+
+# Prompt user to decide whether to download mods or not
+download_choice = input("Do you want to download the mods via SteamCMD? (yes/no): ").strip().lower()
+
+# Download SteamCMD and mods only if the user chose to download
+if download_choice == "yes":
+    download_steamcmd()
+    for mod_id in mod_ids:
+        mod_path = os.path.join(workshop_content_dir, mod_id)
+        if not os.path.exists(mod_path):
+            download_mod(mod_id)
+        else:
+            print(f"Mod {mod_id} already downloaded; skipping download.")
+    print("All listed mods have been downloaded and configured.")
+else:
+    print("Mod download skipped. Mods listed in the modlist.txt file have been configured.")
