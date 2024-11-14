@@ -17,7 +17,7 @@
 ## Installation
 
 1. **Download the zip**:
-   https://github.com/DJRLincs/ConanModpackManager/releases/tag/0.1
+   https://github.com/DJRLincs/ConanModpackManager/releases
    
 2. **Put it into a folder**:
    find the folder you want to use it in and unzip
