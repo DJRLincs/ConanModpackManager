@@ -1,4 +1,4 @@
-# ConanModpackManager
+# ConanModpackManager by DJRLincs
 
 **ConanModpackManager** is a simple, flexible script for managing multiple mod configurations in Conan Exiles. It allows players and server admins to easily switch between mod collections, automatically updating the `modlist.txt` with the correct paths and selected modpacks.
 
