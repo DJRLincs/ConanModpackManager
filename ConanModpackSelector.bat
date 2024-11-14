@@ -5,7 +5,7 @@ echo Checking for Python installation:
 py -3 --version
 
 echo.
-echo This script will check for Python, install it if it’s not found, and then run the ConanModpackManager script.
+echo This script will check for Python, install it if its not found, and then run the ConanModpackManager script.
 echo **NOTE**: This is a single-use run. If you wish to automate it, refer to the GitHub README for details on integration.
 echo.
 echo.
