@@ -43,9 +43,17 @@ def download_mod(mod_id):
     print(f"Downloading mod with ID: {mod_id}")
     subprocess.run([steamcmd_executable, "+login", "anonymous", "+workshop_download_item", "440900", mod_id, "+quit"])
 
+def get_yn_input(prompt):
+    while True:
+        response = input(prompt).strip().lower()
+        if response in ['y', 'n']:
+            return response == 'y'
+        print("Please enter 'Y' or 'N'.")
+
 print("\nConan Modpack Selector by DJRLincs\n***Warning***\n")
 print("This script will overwrite the 'modlist.txt' file in the main ConanSandbox/Mods folder.")
-print("The script will not automatically download the workshop items unless you choose to use SteamCMD.\n")
+print("The script will not automatically download the workshop items unless you choose to use SteamCMD.")
+print("Place your modlist.txt files in the 'modpacks' folder: <Conan Exiles Path>\\ConanSandbox\\Mods\\modpacks\\")
 print("If this is your first time running this script, you'll need to rerun it after creating")
 print("a modpack folder in your Mods directory and placing modlist files in it.\n")
 input("Press Enter to continue...")
@@ -89,8 +97,7 @@ selected_index = int(input("\nEnter the number of the modpack you want to apply:
 selected_modpack = modpacks[selected_index - 1]
 
 # Ask for confirmation before overwriting modlist.txt
-confirmation = input("\nAre you sure you want to overwrite the current modlist.txt file? (yes/no): ").strip().lower()
-if confirmation == "yes":
+if get_yn_input("\nAre you sure you want to overwrite the current modlist.txt file? (Y/N): "):
     # Backup existing modlist.txt file
     backup_path = os.path.join(mods_dir, "modlist_backup.txt")
     shutil.copy(target_path, backup_path)
@@ -116,10 +123,7 @@ if confirmation == "yes":
     mod_ids = re.findall(r"440900[\\/](\d+)", content)
 
     # Prompt the user to decide whether to download mods using SteamCMD
-    download_choice = input("\nDo you need to download the mods listed in the modlist.txt file via SteamCMD? (yes/no): ").strip().lower()
-
-    # Download SteamCMD and mods only if the user chose to download
-    if download_choice == "yes":
+    if get_yn_input("\nDo you need to download the mods listed in the modlist.txt file via SteamCMD? (Y/N): "):
         download_steamcmd()
         for mod_id in mod_ids:
             mod_path = os.path.join(workshop_content_dir, mod_id)
